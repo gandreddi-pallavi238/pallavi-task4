@@ -1,25 +1,30 @@
-let activeTab = null;
-let startTime = null;
+let currentTab = '';
+let startTime = Date.now();
 
-chrome.tabs.onActivated.addListener(async (activeInfo) => {
-  const tab = await chrome.tabs.get(activeInfo.tabId);
-  trackTime(tab);
+chrome.tabs.onActivated.addListener(activeInfo => {
+    chrome.tabs.get(activeInfo.tabId, tab => {
+        switchTab(tab.url);
+    });
 });
 
-async function trackTime(tab) {
-  if (!tab.url) return;
-  const domain = new URL(tab.url).hostname;
-  if (activeTab) {
-    const endTime = new Date();
-    const timeSpent = (endTime - startTime) / 1000;
-    console.log(`Spent ${timeSpent}s on ${activeTab}`);
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+    if (tab.active && changeInfo.status === 'complete') {
+        switchTab(tab.url);
+    }
+});
 
-    // Save to storage or send to backend
-    chrome.storage.local.get([activeTab], (result) => {
-      const total = (result[activeTab] || 0) + timeSpent;
-      chrome.storage.local.set({ [activeTab]: total });
-    });
-  }
-  activeTab = domain;
-  startTime = new Date();
+function switchTab(url) {
+    const endTime = Date.now();
+    const timeSpent = (endTime - startTime) / 1000;
+
+    if (currentTab) {
+        let domain = new URL(currentTab).hostname;
+        chrome.storage.local.get([domain], (result) => {
+            let totalTime = (result[domain] || 0) + timeSpent;
+            chrome.storage.local.set({ [domain]: totalTime });
+        });
+    }
+
+    currentTab = url;
+    startTime = Date.now();
 }
