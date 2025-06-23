@@ -1,13 +1,13 @@
 {
   "manifest_version": 3,
-  "name": "Productivity Time Tracker",
+  "name": "Time Tracker Extension",
   "version": "1.0",
+  "description": "Tracks time spent on websites and classifies them",
   "permissions": ["tabs", "storage", "activeTab"],
   "background": {
     "service_worker": "background.js"
   },
   "action": {
-    "default_popup": "popup.html",
-    "default_icon": "icon.png"
+    "default_popup": "popup.html"
   }
 }
